@@ -118,13 +118,13 @@ Deploy merkle distributor smart contract on rinkeby testnet:
 truffle migrate -f 2 --network rinkeby
 ```
 Output:
-![alt deployOutput](https://github.com/Zilan-Ouyang/merkle_distibutor_frontend_airdrop/blob/master/airdrop_frontend/screenshots/deployOutput.png)
+![alt deployOutput](https://github.com/Zilan-Ouyang/merkle_distributor_airdrop_front_end/blob/main/screenshots/deployOutput.png)
 
 ### 3. Integrate the smart contract into your front end
 #### 1. Before we start the integration, make sure you fund the generated contract address with your custom tokens first
-![alt deployOutput](https://github.com/Zilan-Ouyang/merkle_distibutor_frontend_airdrop/blob/master/airdrop_frontend/screenshots/fundingContract.png)
+![alt deployOutput](https://github.com/Zilan-Ouyang/merkle_distributor_airdrop_front_end/blob/main/screenshots/fundingContract.png)
 #### 2. Add merkle tree output to a json file, name it "merkleTree.json":
-![alt deployOutput](https://github.com/Zilan-Ouyang/merkle_distibutor_frontend_airdrop/blob/master/airdrop_frontend/screenshots/merkleTreejson.png)
+![alt deployOutput](https://github.com/Zilan-Ouyang/merkle_distributor_airdrop_front_end/blob/main/screenshots/merkleTreejson.png)
 
 #### 3. Integrate the contract functions to your javascript front end codebase
 ```javascript
@@ -168,10 +168,10 @@ export default class MerkleDistributorClient {
 ```
 ### 4. Result
 #### Claiming token:
-![alt deployOutput](https://github.com/Zilan-Ouyang/merkle_distibutor_frontend_airdrop/blob/master/airdrop_frontend/screenshots/claimingToken.png)
+![alt deployOutput](https://github.com/Zilan-Ouyang/merkle_distributor_airdrop_front_end/blob/main/screenshots/claimingToken.png)
 
 #### Successfully claimed token:
-![alt deployOutput](https://github.com/Zilan-Ouyang/merkle_distibutor_frontend_airdrop/blob/master/airdrop_frontend/screenshots/result.png)
+![alt deployOutput](https://github.com/Zilan-Ouyang/merkle_distributor_airdrop_front_end/blob/main/screenshots/result.png)
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
