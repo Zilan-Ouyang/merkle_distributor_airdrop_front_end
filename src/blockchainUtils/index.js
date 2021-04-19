@@ -26,6 +26,10 @@ export default class MerkleDistributorClient {
             const amountOfAddress = claimAccountsArr[claimAccounts.indexOf(userAddress)].amount 
             let txHash = await this.distributorInstance.methods.claim(indexOfAddress, userAddress, amountOfAddress, proofOfAddress)
             .send({from: userAddress}, function(error, transactionHash){
+                if(error){
+                    console.log(error)
+                    return false
+                }
                 return transactionHash.hash
             })
             return txHash;

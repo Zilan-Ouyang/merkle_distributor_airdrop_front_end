@@ -162,24 +162,25 @@ export default function Home(props) {
                 <Nav className="ml-auto">
                 {connected&&address != "" ? ( //ethBalance
                     <>
-                        <Chip
-                            label={tokenBalance + " ZTT"}
-                            color="primary"
-                            variant="outlined"
-                        />
+                        
                         <Chip
                             icon={<FaceIcon />}
                             label={address}
-                            clickable
+                            //clickable
                             color="primary"
                             deleteIcon={<DoneIcon />}
                             variant="outlined"
-                            onClick={handleAccountClick}
+                            //onClick={handleAccountClick}
+                        />
+                        <Chip
+                            label={tokenBalance + " ZTT"}
+                            color="primary"
+                            //variant="outlined"
                         />
                         <Chip
                             label={ethBalance + " ETH"}
-                            color="primary"
-                            variant="outlined"
+                            color="secondary"
+                            //variant="outlined"
                         />
                     </>
                 )
@@ -215,7 +216,7 @@ export default function Home(props) {
                 </CardActions>
             </Card>
             
-            <Dialog
+            {/* <Dialog
                 open={openAccount}
                 TransitionComponent={Transition}
                 keepMounted
@@ -238,7 +239,7 @@ export default function Home(props) {
                     Cancel
                 </Button>
                 </DialogActions>
-            </Dialog>
+            </Dialog> */}
         </div>
     );
 }
