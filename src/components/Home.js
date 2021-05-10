@@ -18,6 +18,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Slide from '@material-ui/core/Slide';
 import MerkleDistributorClient from '../blockchainUtils'
+import tree from '../merkle-distributor/merkle_results.json'
 const merkleDistributor = new MerkleDistributorClient();
 
 const Transition = React.forwardRef(function Transition(props, ref) {
@@ -61,6 +62,9 @@ export default function Home(props) {
     const [recipient, setRecipient] = useState("")
     const [openAccount, setOpenAccount] = useState(false)
     const [updateBal, setUpdateBal] = useState(false)
+    const [airdropAmt, setAirdropAmt] = useState(0)
+    const [claimed, setClaimed] = useState(false)
+    //console.log(tree)
     const getAccount = async() => {
         const networkNameLookup = {
             '0x1': 'mainnet',
@@ -69,13 +73,14 @@ export default function Home(props) {
             '0x5': 'goerli',
             '0x2a': 'kovan',
         };
-        console.log(ethereum);
-        console.log(ethereum.isConnected());
+        // console.log(ethereum);
+        // console.log(ethereum.isConnected());
         if (!!ethereum&&ethereum.isConnected()&&!!address ==false) {
             try {
                 const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
                 const address = accounts[0];
                 getCustomTokenBalance(address)
+                getAirdropAmount(address)
                 //let address = window.web3.eth.accounts[0] ? window.web3.eth.accounts[0].toLowerCase() : null;
                 let networkId = await ethereum.request({ method: 'eth_chainId' });
                 let networkName = networkNameLookup[networkId] || `unknown(${networkId})`;
@@ -87,6 +92,7 @@ export default function Home(props) {
                 let balance = (result/1e18).toFixed(2)
                 console.log(balance)
                 console.log({Address: address, netWorkId:networkId, network: networkName, ethBalance: balance})
+                setConnected(true)
                 setAddress(address)
                 setNetwork(network)
                 setEthBalance(balance)
@@ -101,13 +107,49 @@ export default function Home(props) {
             console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
         }  
     }
-    
+    const isAccountClaimable = async (userAddress) => {
+        let isClaimed = await merkleDistributor.isClaimed(userAddress)
+        const claimAccounts = Object.keys(tree.claims).map(e => e.toLowerCase())
+        // console.log(claimAccounts.includes(userAddress));
+        console.log(isClaimed)
+        if(!claimAccounts.includes(userAddress)){
+            return false
+        }
+        else if(isClaimed){ 
+            return false
+        }
+        else{
+            return true
+        }
+    }
+    const getAirdropAmount = async(userAddress) => {
+        let claimable = await isAccountClaimable(userAddress)
+        console.log(claimable)
+        if(claimable){
+            const claimAccounts = Object.keys(tree.claims).map(e => e.toLowerCase())
+            const claimAccountsArr = Object.keys(tree.claims).map(ele => {
+                return {
+                    address: ele.toLowerCase(),
+                    index: tree.claims[ele]['index'],
+                    amount: tree.claims[ele]['amount'],
+                    proof: tree.claims[ele]['proof']
+                }
+            })
+            const claimAmount = claimAccountsArr[claimAccounts.indexOf(userAddress)].amount
+            const amountInDecimal = (parseInt(claimAmount, 16)/1e18).toFixed(2)
+            setAirdropAmt(amountInDecimal)
+        }else{
+            setAirdropAmt(0)
+        }
+        
+    }
     const getCustomTokenBalance = async(userAddress) => {
         window.web3 = new Web3(window.ethereum);
         let abtract = TestERC20.abi
-        let tokenInstance = await new window.web3.eth.Contract(abtract, '0x6914c4c0e08016ad9d3381ae8d03560df670e5c1')
+        let tokenInstance = await new window.web3.eth.Contract(abtract, '0x3c65Ef211B3a857CA14ed3B46572a6c199413f3c')
         let balance = await tokenInstance.methods.balanceOf(userAddress).call()
         let tokenBal = (balance/1e18).toFixed(2)
+        //console.log(tokenBal)
         setTokenBalance(tokenBal)
         
     }
@@ -128,6 +170,7 @@ export default function Home(props) {
         // })
     })
     useEffect(()=>{
+        
         getAccount()
     },[updateBal])
     const handleChange = (event) => {
@@ -140,6 +183,7 @@ export default function Home(props) {
         event.preventDefault()
         
     }
+    
     const handleClaimToken = async(event) => {
         let res = await merkleDistributor.claimToken(recipient)
         console.log(res)
@@ -160,6 +204,8 @@ export default function Home(props) {
                     </Typography>
                 </Navbar.Brand>
                 <Nav className="ml-auto">
+                {/* {console.log(connected)}
+                {console.log(address != "")} */}
                 {connected&&address != "" ? ( //ethBalance
                     <>
                         
@@ -173,7 +219,7 @@ export default function Home(props) {
                             //onClick={handleAccountClick}
                         />
                         <Chip
-                            label={tokenBalance + " ZTT"}
+                            label={tokenBalance + " SNST"}
                             color="primary"
                             //variant="outlined"
                         />
@@ -190,13 +236,14 @@ export default function Home(props) {
                 </Nav>
             </Navbar>
             
+            {!!address&&isAccountClaimable(address)?
             <Card className={classes.root}>
                 <CardContent>
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
                         Claim Test Token
                     </Typography>
                     <Typography variant="h5" component="h2">
-                        100 ZTT
+                        {airdropAmt} SNST
                     </Typography>
                     <Typography className={classes.pos} color="textSecondary">
                         Enter an address to trigger a token claim. If the address has any claimable token it will be sent to them on submission.
@@ -212,9 +259,38 @@ export default function Home(props) {
                     />
                 </CardContent>
                 <CardActions>
-                    <Button className={classes.claimButton} onClick={handleClaimToken}>Claim</Button>
+                    {airdropAmt === 0? 
+                    <Button className={classes.claimButton} disabled={true}>You don't have any claimable token</Button>
+                    :<Button className={classes.claimButton} onClick={handleClaimToken}>Claim</Button>}
                 </CardActions>
             </Card>
+            :<Card className={classes.root} disabled>
+                <CardContent>
+                    <Typography className={classes.title} color="textSecondary" gutterBottom>
+                        Claim Test Token
+                    </Typography>
+                    <Typography variant="h5" component="h2">
+                        {airdropAmt} SNST
+                    </Typography>
+                    <Typography className={classes.pos} color="textSecondary">
+                        Enter an address to trigger a token claim. If the address has any claimable token it will be sent to them on submission.
+                    </Typography>
+                    <TextField
+                        className={classes.addressTextField}
+                        label="Recipient Address"
+                        id="outlined-start-adornment"
+                        variant="outlined"
+                        placeholder="Recipient's Wallet address"
+                        onChange={handleChange}
+                        value={address}
+                    />
+                </CardContent>
+                <CardActions>
+                    {airdropAmt === 0? 
+                    <Button className={classes.claimButton} disabled={true}>You don't have any claimable token</Button>
+                    :<Button className={classes.claimButton} onClick={handleClaimToken}>Claim</Button>}
+                </CardActions>
+            </Card>}
             
             {/* <Dialog
                 open={openAccount}
