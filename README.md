@@ -138,7 +138,7 @@ export default class MerkleDistributorClient {
         this.distributorInstance = new window.web3.eth.Contract(abtract, '0x76F4720705010dfBCB0C2C6a9ed133faF0c2D2AD')
         this.tree = tree
     }
-    
+    // handle claim token request
     async claimToken(userAddress){
         
         const claimAccounts = Object.keys(tree.claims).map(e => e.toLowerCase())
@@ -164,6 +164,46 @@ export default class MerkleDistributorClient {
             return false
         }
     }
+   // check if the current connected user wallet already claimed the token
+   // true - if the tokens have already been claimed yet
+   // false - the tokens have not been claimed yet OR if user's wallet address is not included into the merkle tree 
+    async isClaimed(userAddress){
+        const claimAccounts = Object.keys(tree.claims).map(e => e.toLowerCase())
+        const claimAccountsArr = Object.keys(tree.claims).map(ele => {
+            return {
+                address: ele.toLowerCase(),
+                index: tree.claims[ele]['index'],
+                amount: tree.claims[ele]['amount'],
+                proof: tree.claims[ele]['proof']
+            }
+        })
+        if (claimAccounts.includes(userAddress)) {
+            const indexOfAddress = claimAccountsArr[claimAccounts.indexOf(userAddress)].index
+            let txRes = await this.distributorInstance.methods.isClaimed(indexOfAddress).call()
+            return txRes
+        }else{
+            return false
+        }
+    }
+}
+```
+Additional (function to check if the current connected wallet is eligible for airdrop): 
+
+```javascript
+const isAccountClaimable = async (userAddress) => {
+   // Calling merkle distributor smart contract to check if the airdrop tokens have been claimed or not
+   let isClaimed = await merkleDistributor.isClaimed(userAddress)
+   // Check if the current connected user account exists in the merkle tree
+   const claimAccounts = Object.keys(tree.claims).map(e => e.toLowerCase())
+   if(!claimAccounts.includes(userAddress)){ //if account is not in the tree, unclaimable
+      return false
+   }
+   else if(isClaimed){ //if airdrop tokens already been claimed, unclaimable
+      return false
+   }
+   else{
+      return true
+   }
 }
 ```
 ### 4. Result
@@ -172,6 +212,7 @@ export default class MerkleDistributorClient {
 
 #### Successfully claimed token:
 ![alt deployOutput](https://github.com/Zilan-Ouyang/merkle_distributor_airdrop_front_end/blob/main/screenshots/result.png)
+
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
