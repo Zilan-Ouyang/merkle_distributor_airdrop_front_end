@@ -11,19 +11,11 @@ import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import TextField from '@material-ui/core/TextField';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Slide from '@material-ui/core/Slide';
 import MerkleDistributorClient from '../blockchainUtils'
-import tree from '../merkle-distributor/merkle_results.json'
+import tree from '../blockchainUtils/merkleTree.json'
 const merkleDistributor = new MerkleDistributorClient();
+const TOKEN_ADDRESS = "0x3c65Ef211B3a857CA14ed3B46572a6c199413f3c"
 
-const Transition = React.forwardRef(function Transition(props, ref) {
-    return <Slide direction="up" ref={ref} {...props} />;
-});
 const useStyles = makeStyles({
     root: {
         width: '40%',
@@ -146,7 +138,7 @@ export default function Home(props) {
     const getCustomTokenBalance = async(userAddress) => {
         window.web3 = new Web3(window.ethereum);
         let abtract = TestERC20.abi
-        let tokenInstance = await new window.web3.eth.Contract(abtract, '0x3c65Ef211B3a857CA14ed3B46572a6c199413f3c')
+        let tokenInstance = await new window.web3.eth.Contract(abtract, TOKEN_ADDRESS)
         let balance = await tokenInstance.methods.balanceOf(userAddress).call()
         let tokenBal = (balance/1e18).toFixed(2)
         //console.log(tokenBal)
